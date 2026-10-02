@@ -1,0 +1,36 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Create native scaffold
+        run: |
+          mkdir temp_app
+          cd temp_app
+          flutter create --org ir.zarinparseh .
+          cd ..
+          cp -r temp_app/android ./android
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: zarin-parseh-app
+          path: build/app/outputs/flutter-apk/app-release.apk
